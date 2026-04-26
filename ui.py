@@ -2,7 +2,41 @@ import pandas as pd
 import streamlit as st
 from streamlit_echarts import st_echarts
 
-def draw_gauge(data, key, height="100px"):
+def draw_overview_radar(data, max_score):
+    radar_settings = {
+        # "title": {"text": "8D Report Quality Profile"},
+        # "legend": {
+        #     "data": ["case 1", "case 2"]
+        # },
+        "radar": {
+            "splitNumber": 4,
+            "indicator": [
+                {"name": "Cause of Occurrence", "max": max_score},
+                {"name": "Correction Actions of Occurrence", "max": max_score},
+                {"name": "Reason of Escape out", "max": max_score},
+                {"name": "Correction Actions of Escape out", "max": max_score},
+                {"name": "Prevention Actions", "max": max_score},
+                {"name": "Standardization", "max": max_score},
+            ]
+        },
+        "series": [
+            {
+                "name": "reports",
+                "type": "radar",
+                "data": [
+                    {
+                        "value": data,
+                        "name": "case 1",
+                        "itemStyle": {"color": 'rgba(39, 183, 236, 1)'},
+                        "areaStyle": {"color": 'rgba(39, 183, 236, 0.3)'}
+                    },
+                ],
+            }
+        ],
+    }
+    st_echarts(radar_settings)
+
+def draw_item_gauge(data, chart_key, height="100px"):
     options = {
         "series": [
             {
@@ -39,94 +73,67 @@ def draw_gauge(data, key, height="100px"):
             }
         ]
     }
-    st_echarts(options, height=height, key=key)
+    st_echarts(options, height=height, key=chart_key)
 
 # ---------------------------------------------------------------------------------------------------------------------------
 st.set_page_config(page_title="8D Report Evaluator", layout="wide", initial_sidebar_state='expanded')
 st.title('8D Report Evaluator')
+
+# 評分準則
 with st.expander('評分準則'):
     guide = pd.read_excel('data/8d_data.xlsx', sheet_name='評核標準')
     st.dataframe(guide, hide_index=True)
+
+# 資料 & 評分結果
 st.subheader('Case 1')
 st.caption('此結果為前置評分程式產出之已保存資料')
 df = pd.read_excel('data/scored_report.xlsx')
 st.dataframe(df.set_index('項目'))
 
-# Radar Chart
+# 評分結果視覺化
 st.subheader('Quality Profile')
 c1,c2 = st.columns(2, vertical_alignment="center")
+
+# Radar Chart
 max_score = 20
-radar_settings = {
-    # "title": {"text": "8D Report Quality Profile"},
-    # "legend": {
-    #     "data": ["case 1", "case 2"]
-    # },
-    "radar": {
-        "splitNumber": 4,
-        "indicator": [
-            {"name": "Cause of Occurrence", "max": max_score},
-            {"name": "Correction Actions of Occurrence", "max": max_score},
-            {"name": "Reason of Escape out", "max": max_score},
-            {"name": "Correction Actions of Escape out", "max": max_score},
-            {"name": "Prevention Actions", "max": max_score},
-            {"name": "Standardization", "max": max_score},
-        ]
-    },
-    "series": [
-        {
-            "name": "reports",
-            "type": "radar",
-            "data": [
-                {
-                    "value": list(df['score']),
-                    "name": "case 1",
-                    "itemStyle": {"color": 'rgba(39, 183, 236, 1)'},
-                    "areaStyle": {"color": 'rgba(39, 183, 236, 0.3)'}
-                },
-            ],
-        }
-    ],
-}
 with c1:
-    st_echarts(radar_settings)
+    draw_overview_radar(data=list(df['score']),max_score=max_score)
 
 # Gauge Chart
 with c2:
     col1, col2, col3 = st.columns(3, vertical_alignment="bottom")
     col4, col5, col6 = st.columns(3, vertical_alignment="bottom")
-    items = ['Cause of Occurrence', 'Correction Actions of Occurrence',
-           'Reason of Escape out', 'Correction Actions of Escape out',
-           'Prevention Actions', 'Standardization']
+    items = list(guide['項目'])
     df_dict = df.set_index('項目').to_dict('index')
     with col1:
         item = items[0]
         st.caption(item, text_alignment='center')
-        draw_gauge(data=df_dict[item]['score'], key='chart1')
+        draw_item_gauge(data=df_dict[item]['score'], chart_key='chart1')
         # st.caption(df_dict[item]['suggestion'])
     with col2:
         item = items[1]
         st.caption(item, text_alignment='center')
-        draw_gauge(data=df_dict[item]['score'], key='chart2')
+        draw_item_gauge(data=df_dict[item]['score'], chart_key='chart2')
         # st.caption(df_dict[item]['suggestion'])
     with col3:
         item = items[2]
         st.caption(item, text_alignment='center')
-        draw_gauge(data=df_dict[item]['score'], key='chart3')
+        draw_item_gauge(data=df_dict[item]['score'], chart_key='chart3')
         # st.caption(df_dict[item]['suggestion'])
     with col4:
         item = items[3]
         st.caption(item, text_alignment='center')
-        draw_gauge(data=df_dict[item]['score'], key='chart4')
+        draw_item_gauge(data=df_dict[item]['score'], chart_key='chart4')
         # st.caption(df_dict[item]['suggestion'])
     with col5:
         item = items[4]
         st.caption(item, text_alignment='center')
-        draw_gauge(data=df_dict[item]['score'], key='chart5')
+        draw_item_gauge(data=df_dict[item]['score'], chart_key='chart5')
         # st.caption(df_dict[item]['suggestion'])
     with col6:
         item = items[5]
         st.caption(item, text_alignment='center')
-        draw_gauge(data=df_dict[item]['score'], key='chart6')
+        draw_item_gauge(data=df_dict[item]['score'], chart_key='chart6')
         # st.caption(df_dict[item]['suggestion'])
     # 顏色說明
     st.markdown(":red-badge[:material/close: 差劣] :orange-badge[:material/priority_high: 普通] :yellow-badge[:material/thumb_up: 不錯] :green-badge[:material/thumbs_up_double: 傑出]",
