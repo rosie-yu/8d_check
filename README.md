@@ -1,4 +1,4 @@
-# 8D Report Auto Scoring
+# 8D Report Evaluator
 
 使用 LLM 對 8D 報告進行自動評分，並將結果視覺化呈現。
 
