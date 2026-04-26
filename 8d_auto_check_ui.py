@@ -7,7 +7,7 @@ from streamlit_echarts import st_echarts
 # st.link_button('Click', 'https://google.com/')
 
 st.set_page_config(page_title="Auto check", layout="wide", initial_sidebar_state='expanded')
-df = pd.read_excel('8d_check/scored_report.xlsx')
+df = pd.read_excel('scored_report.xlsx')
 st.dataframe(df)
 
 max_score = 20
